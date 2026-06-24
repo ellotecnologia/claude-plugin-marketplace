@@ -15,3 +15,9 @@ Para instalar um plugin:
 ```
 /plugin install dokuwiki@ello-plugins
 ```
+
+Para atualizar os plugins instalados:
+
+```
+/plugin marketplace update ello-plugins
+```

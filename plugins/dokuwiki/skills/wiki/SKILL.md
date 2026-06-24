@@ -1,9 +1,9 @@
 ---
 description: Read and write pages on the team DokuWiki at wiki.ellotecnologia.com
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py *)
+allowed-tools: Bash(python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py *)
 ---
 
-Use `python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py` to interact with the DokuWiki at wiki.ellotecnologia.com.
+Use `python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py` to interact with the DokuWiki at wiki.ellotecnologia.com.
 
 Auth comes from the environment (`DOKUWIKI_URL`, `DOKUWIKI_USER`, `DOKUWIKI_PASS`, or `DOKUWIKI_TOKEN`) or a `.env` file in the working directory. You never need to pass credentials explicitly.
 
@@ -37,25 +37,25 @@ Auth comes from the environment (`DOKUWIKI_URL`, `DOKUWIKI_USER`, `DOKUWIKI_PASS
 
 ```bash
 # Read a page
-python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py get start
+python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py get start
 
 # List all pages in the "projects" namespace
-python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py list --namespace projects --depth 0
+python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py list --namespace projects --depth 0
 
 # Search
-python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py search "deployment guide"
+python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py search "deployment guide"
 
 # Create or update a page (plain-language content only — see Audience and content guidelines below)
-python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py save projects:mypage --text "= Title =\nContent here." --summary "initial draft"
+python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py save projects:mypage --text "= Title =\nContent here." --summary "initial draft"
 
 # Append a section
-python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py append projects:mypage --text "\n== New Section ==\nMore content."
+python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py append projects:mypage --text "\n== New Section ==\nMore content."
 
 # Get page metadata
-python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py info projects:mypage --author
+python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py info projects:mypage --author
 
 # Delete a page (save empty text)
-python3 ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py save projects:mypage --text "" --summary "deleted"
+python ${CLAUDE_SKILL_DIR}/scripts/dokuwiki.py save projects:mypage --text "" --summary "deleted"
 ```
 
 ## Page ID format
