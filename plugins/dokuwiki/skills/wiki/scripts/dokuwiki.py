@@ -281,7 +281,7 @@ def _read_text(args):
     if args.file == "-":
         return sys.stdin.read()
     if args.file:
-        with open(args.file) as f:
+        with open(args.file, encoding="utf-8") as f:
             return f.read()
     sys.exit("Error: provide --text or --file")
 
