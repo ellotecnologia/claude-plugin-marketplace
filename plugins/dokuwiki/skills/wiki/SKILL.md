@@ -78,3 +78,29 @@ Content written or edited on this wiki is for **software users and support analy
 - **Rewrite, don't copy.** When pulling content from tickets, code comments, commit messages, or developer chat, rewrite it for the target audience rather than pasting it verbatim.
 
 When in doubt, prefer a simpler, less precise explanation over a technically precise but jargon-heavy one.
+
+## PlantUML
+
+The wiki is equiped with a PlantUML plugin so it can render these diagrams:
+- sequence
+- use case
+- class
+- activity
+- component
+- state
+- object
+
+A typical PlantUML diagram is enclosed by @startuml and @enduml. Replace these by <uml> and </uml>.
+
+Example:
+```
+<uml>
+Alice -> Bob: Authentication Request
+Bob --> Alice: Authentication Response
+
+Alice -> Bob: Another authentication Request
+Alice <-- Bob: another authentication Response
+</uml>
+```
+
+Whatever is inside the uml tags will be displayed as a SVG on the wiki page.
