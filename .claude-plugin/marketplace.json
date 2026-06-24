@@ -1,0 +1,13 @@
+{
+  "name": "ello-plugins",
+  "owner": {
+    "name": "Plugins da Ello"
+  },
+  "plugins": [
+    {
+      "name": "developer-plugin",
+      "source": "./plugins/developer-plugin",
+      "description": "Adds skills and agents for development"
+    }
+  ]
+}
