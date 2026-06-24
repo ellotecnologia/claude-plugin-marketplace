@@ -5,9 +5,14 @@
   },
   "plugins": [
     {
-      "name": "developer-plugin",
-      "source": "./plugins/developer-plugin",
-      "description": "Adds skills and agents for development"
+      "name": "software-engineering",
+      "source": "./plugins/software-engineering",
+      "description": "Skills and agents for software engineering"
+    },
+    {
+      "name": "dokuwiki",
+      "source": "./plugins/dokuwiki",
+      "description": "Helps writing dokuwiki articles"
     }
   ]
 }
