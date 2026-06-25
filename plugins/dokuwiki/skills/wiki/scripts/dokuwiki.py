@@ -6,7 +6,6 @@ import base64
 import json
 import os
 import sys
-import tomllib
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -54,15 +53,11 @@ def load_config(url=None, user=None, password=None, token=None):
     # ~/.config/dokuwiki/config.toml
     toml_path = Path.home() / ".config" / "dokuwiki" / "config.toml"
     if toml_path.exists():
-        try:
-            with open(toml_path, "rb") as f:
-                toml = tomllib.load(f)
-            env.setdefault("DOKUWIKI_URL", toml.get("url", ""))
-            env.setdefault("DOKUWIKI_USER", toml.get("user", ""))
-            env.setdefault("DOKUWIKI_PASS", toml.get("pass", ""))
-            env.setdefault("DOKUWIKI_TOKEN", toml.get("token", ""))
-        except Exception:
-            pass
+        toml = _parse_dotenv(toml_path)  # key = value lines; handles the same simple format
+        env.setdefault("DOKUWIKI_URL", toml.get("url", ""))
+        env.setdefault("DOKUWIKI_USER", toml.get("user", ""))
+        env.setdefault("DOKUWIKI_PASS", toml.get("pass", ""))
+        env.setdefault("DOKUWIKI_TOKEN", toml.get("token", ""))
 
     # OS env vars override file config
     for k in ("DOKUWIKI_URL", "DOKUWIKI_USER", "DOKUWIKI_PASS", "DOKUWIKI_TOKEN"):
