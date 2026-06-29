@@ -1,85 +1,91 @@
 ---
-name: analyzing-chamado-videos
+name: transcribe
 description: >
-  Use esta skill quando o usuário pedir para transcrever, analisar, "assistir" ou
-  "escutar" um vídeo — tipicamente um vídeo de erro/reprodução anexado em um chamado.
-  Exemplos: "transcreve esse vídeo", "analisa o vídeo do chamado", "o que tem nesse
-  vídeo", "vídeo do cliente mostrando o erro", "extrai o áudio/legenda do vídeo",
-  "me mostra o que aparece na tela desse vídeo". Faz tudo local/offline via Docker
-  (ffmpeg + whisper.cpp) — não envia o vídeo para nenhum serviço externo.
+  Use this skill when the user asks to transcribe, analyze, "watch" or
+  "listen to" a video — typically an error/playback video attached to a support
+  ticket. Examples: "transcribe this video", "analyze the ticket's video", "what's
+  in this video", "customer video showing the error", "extract the audio/subtitles
+  from the video", "show me what appears on screen in this video".
 version: 1.0.0
 ---
 
-# Análise de Vídeo de Chamado
+# Support Ticket Video Analysis
 
-Extrai **quadros-chave** (para "ver" o que aparece na tela) e **transcreve o áudio**
-(para "ouvir" a narração) de um vídeo, rodando 100% local via Docker. Útil para
-diagnosticar vídeos de erro anexados em chamados: muitas vezes são gravações de
-celular filmando o monitor (tremidas) — nesses casos **a narração em áudio costuma
-ser a informação mais valiosa**.
+Does everything locally/offline via Docker (ffmpeg + whisper.cpp) — does not
+send the video to any external service.
 
-Pipeline: `ffprobe` (info) → `ffmpeg` (frames + áudio 16kHz) → `whisper.cpp` (texto).
+Extracts **key frames** (to "see" what's on screen) and transcribes the
+**audio** (to "hear" the narration) from a video, running 100% locally via
+Docker. Useful for diagnosing error videos attached to tickets: they're often
+phone recordings filming the monitor (shaky footage) — in those cases **the
+audio narration is usually the most valuable information**.
 
-## Pré-requisitos
+Pipeline: `ffprobe` (info) → `ffmpeg` (frames + 16kHz audio) → `whisper.cpp` (text).
 
-- **Docker Desktop instalado e rodando** (a baleia estável na bandeja). Se não estiver,
-  abrir o Docker Desktop e aguardar o engine subir. Sem instalar: `winget install -e --id Docker.DockerDesktop`.
-- Primeira execução baixa as imagens (`mwader/static-ffmpeg` ~50MB,
-  `ghcr.io/ggml-org/whisper.cpp` ~150MB) e o modelo whisper (`small` ~466MB). Tudo
-  fica em cache e é reusado depois: as imagens no Docker e o modelo num **volume
-  nomeado do Docker** (`ello-whisper-models`).
+## Prerequisites
 
-## Passo 1 — Caminho do vídeo
+- **Docker Desktop installed and running** (the stable whale icon in the tray). If
+  not, open Docker Desktop and wait for the engine to start. To install:
+  `winget install -e --id Docker.DockerDesktop`.
+- The first run downloads the images (`mwader/static-ffmpeg` ~50MB,
+  `ghcr.io/ggml-org/whisper.cpp` ~150MB) and the whisper model (`small` ~466MB).
+  Everything is cached and reused afterward: the images in Docker and the model in
+  a **named Docker volume** (`ello-whisper-models`).
 
-Se o usuário não informou o caminho, perguntar. O vídeo pode estar numa pasta local
-ou anexado no chamado (nesse caso pedir para baixar primeiro).
+## Step 1 — Video path
 
-## Passo 2 — Rodar o script
+If the user hasn't provided the path, ask for it. The video may be in a local
+folder or attached to the ticket (in that case, ask them to download it first).
 
-Pelo Bash tool, a partir da raiz do repositório:
+## Step 2 — Run the script
+
+Via the Bash tool, from the repository root:
 
 ```bash
-.claude/skills/analyzing-chamado-videos/scripts/analisa_video.sh "<caminho_do_video>"
+.claude/skills/analyzing-chamado-videos/scripts/analisa_video.sh "<video_path>"
 ```
 
-Opcionais: `--lang pt` (idioma; padrão pt), `--model small` (base|small|medium),
-`--intervalo 3` (1 frame a cada N segundos), e um 2º argumento posicional para o
-diretório de saída. O script imprime: info do vídeo, quantidade de frames, **a
-transcrição** e os caminhos de saída.
+Optional flags: `--lang pt` (language; default pt), `--model small` (base|small|medium),
+`--intervalo 3` (1 frame every N seconds), and a 2nd positional argument for the
+output directory. The script prints: video info, frame count, **the transcription**,
+and the output paths.
 
-## Passo 3 — Ler os frames
+## Step 3 — Read the frames
 
-Use o **Read tool** nos JPGs gerados (`.../frames/frame_*.jpg`) para enxergar as telas:
-passos do usuário, telas do Ello e a mensagem de erro. Quando o vídeo é celular
-filmando a tela, os frames podem estar borrados — priorize a transcrição e leia os
-frames só para identificar a tela/contexto.
+Use the **Read tool** on the generated JPGs (`.../frames/frame_*.jpg`) to see the
+screens: the user's steps, the app's screens, and the error message. When the video
+is a phone filming the screen, the frames may be blurry — prioritize the transcription
+and read the frames only to identify the screen/context.
 
-## Passo 4 — Sintetizar
+## Step 4 — Synthesize
 
-Juntar áudio + frames num diagnóstico: o que o usuário fez, onde quebrou, qual o erro.
-Como conhecemos o código do Ello, **ligar o que aparece ao ponto no código** (tela,
-unit, query). Se houver número de chamado, cruzar com a descrição dele (`ver_chamado`
-no TomTicket).
+Combine audio + frames into a diagnosis: what the user did, where it broke, what the
+error is. Since we know the app's codebase, **connect what appears on screen to the
+point in the code** (screen, unit, query). If there's a ticket number, cross-reference
+it with the ticket description (`ver_chamado` in TomTicket).
 
-## Gotchas (já resolvidos no script — referência)
+## Gotchas (already handled in the script — for reference)
 
-- **`error getting credentials` no `docker pull`**: o helper `docker-credential-desktop.exe`
-  precisa estar no PATH. O script faz `export PATH="/c/Program Files/Docker/Docker/resources/bin:$PATH"`.
-- **Git Bash converte os caminhos** passados ao docker (`-v`, `-i`) e quebra. O script
-  usa `export MSYS_NO_PATHCONV=1` + `cygpath -m` (caminho Windows com `/`).
-- **File sharing do Docker Desktop (WSL2)**: arquivos em algumas pastas do host (ex.:
-  `%LOCALAPPDATA%\...` fora de `\Temp`) **não aparecem** dentro do container (o `-v` monta
-  a pasta vazia → whisper dá "failed to open model"). Por isso o modelo fica num **volume
-  nomeado** (`ello-whisper-models`) e a saída (frames/áudio) sob `...\Temp\ello-video\`.
-- **`mwader/static-ffmpeg`**: os binários ficam na raiz — usar `--entrypoint /ffprobe`
-  e `--entrypoint /ffmpeg` (não estão no PATH da imagem).
-- **`whisper.cpp`**: entrypoint é `bash -c`, então o comando vai como **uma string**
-  (`"whisper-cli -m ... -f ... -l pt -nt"`). Baixar modelo com
-  `./models/download-ggml-model.sh <model> /models`.
-- **RAM do Docker**: modelo `large` precisa de ~10GB; com pouca RAM use `base`/`small`.
-- **`-nt`** (no-timestamps) + `2>/dev/null` deixa só o texto limpo no stdout.
+- **`error getting credentials` on `docker pull`**: the helper
+  `docker-credential-desktop.exe` needs to be on the PATH. The script does
+  `export PATH="/c/Program Files/Docker/Docker/resources/bin:$PATH"`.
+- **Git Bash converts the paths** passed to docker (`-v`, `-i`) and breaks them. The
+  script uses `export MSYS_NO_PATHCONV=1` + `cygpath -m` (Windows path with `/`).
+- **Docker Desktop file sharing (WSL2)**: files in some host folders (e.g.,
+  `%LOCALAPPDATA%\...` outside `\Temp`) **don't show up** inside the container (the
+  `-v` mount appears empty → whisper fails with "failed to open model"). That's why
+  the model lives in a **named volume** (`ello-whisper-models`) and the output
+  (frames/audio) goes under `...\Temp\ello-video\`.
+- **`mwader/static-ffmpeg`**: the binaries live at the root — use
+  `--entrypoint /ffprobe` and `--entrypoint /ffmpeg` (they're not on the image's PATH).
+- **`whisper.cpp`**: the entrypoint is `bash -c`, so the command must be passed as
+  **a single string** (`"whisper-cli -m ... -f ... -l pt -nt"`). Download the model
+  with `./models/download-ggml-model.sh <model> /models`.
+- **Docker RAM**: the `large` model needs ~10GB; with limited RAM use `base`/`small`.
+- **`-nt`** (no-timestamps) + `2>/dev/null` leaves only clean text on stdout.
 
-## Notas
+## Notes
 
-- Roda offline: o vídeo não sai da máquina (importante para dados de cliente).
-- Para legendas com tempo (.srt) em vez de texto corrido, trocar `-nt` por `-osrt -of /data/transcricao`.
+- Runs offline: the video never leaves the machine (important for customer data).
+- For timestamped subtitles (.srt) instead of running text, replace `-nt` with
+  `-osrt -of /data/transcricao`.
