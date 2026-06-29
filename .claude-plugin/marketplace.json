@@ -13,6 +13,11 @@
       "name": "dokuwiki",
       "source": "./plugins/dokuwiki",
       "description": "Helps writing dokuwiki articles"
+    },
+    {
+      "name": "video-transcript",
+      "source": "./plugins/video-transcript",
+      "description": "Transcribes videos"
     }
   ]
 }
